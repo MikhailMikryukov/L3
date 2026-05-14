@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+    <div>
+        <label for="origin_url">Создать короткую ссылку:</label><input id="origin_url" type="text" required>
+        <button type="submit" onclick="createShortCode()">Создать</button>
+    </div>
+    <hr>
+    <div>
+        <label for="short_code">Перейти по короткой ссылке:</label><input id="short_code" type="text" required>
+        <button type="submit" onclick="goToShortCode()">Перейти</button>
+    </div>
+    <hr>
+    <div>
+        <label for="analytics"></label>Получить аналитику:<input id="analytics" type="text" required>
+        <button type="submit" onclick="getAnalytics()">Получить</button>
+    </div>
+    <hr>
+    <div>
+        <p>Агрегация по дням. Введите диапазон(формат YYYY-MM-DD):</p>
+        <label for="aggregation_daily_url">Короткая ссылка: </label><input id="aggregation_daily_url" type="text" required>
+        <label for="aggregation_daily_from">От: </label><input id="aggregation_daily_from" type="text" required>
+        <label for="aggregation_daily_to">До: </label><input id="aggregation_daily_to" type="text" required>
+        <button type="submit" onclick="dailyAggregation()">Получить</button>
+    </div>
+    <hr>
+    <div>
+        <p>Агрегация по месяцам. Введите диапазон(формат YYYY-MM). Например, за январь - от: 2026-01 до: 2026-02:</p>
+        <label for="aggregation_monthly_url">Короткая ссылка: </label><input id="aggregation_monthly_url" type="text" required>
+        <label for="aggregation_monthly_from">От: </label><input id="aggregation_monthly_from" type="text" required>
+        <label for="aggregation_monthly_to">До: </label><input id="aggregation_monthly_to" type="text" required>
+        <button type="submit" onclick="monthlyAggregation()">Получить</button>
+    </div>
+    <hr>
+    <p id="shor_code_response"></p>
+    <div id="analytics_response"></div>
+
+<script>
+    async function createShortCode() {
+        // 1. Получаем данные формы
+        const originURL = document.getElementById('origin_url').value;
+        const Url = `/shorten?url=${originURL}`;
+
+
+        try {
+            // 2. Выполняем POST-запрос
+            const response = await fetch(Url, {
+                method : 'POST'
+            });
+
+            // Проверяем, успешен ли запрос
+            if (!response.ok) {
+                throw new Error(`Ошибка HTTP: ${response.status}`);
+            }
+
+            // 3. Получаем ответ в формате JSON
+            const result = await response.json();
+
+            // Обрабатываем полученные данные
+            console.log('Server response:', result);
+            // Вставка результата на страницу
+            document.getElementById("shor_code_response").innerText = result.toString()
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    async function goToShortCode() {
+        // 1. Получаем данные формы
+        const short_url = document.getElementById('short_code').value;
+        const Url = `/r/${short_url}`;
+
+        try {
+            // 2. Выполняем GET-запрос с помощью fetch()
+            const response = await fetch(Url);
+            const data = await response.json()
+
+            // Проверяем, успешен ли запрос
+            if (data.url) {
+                window.location.href = data.url;
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    async function getAnalytics() {
+        // 1. Получаем данные формы
+        const short_url = document.getElementById('analytics').value;
+        const Url = `/analytics/${short_url}`;
+
+        try {
+            // 2. Выполняем GET-запрос
+            const response = await fetch(Url);
+
+            // Проверяем, успешен ли запрос
+            if (!response.ok) {
+                throw new Error(`Ошибка HTTP: ${response.status}`);
+            }
+
+            // 3. Получаем ответ в формате JSON
+            const result = await response.json();
+
+            // Обрабатываем полученные данные
+            console.log('Server response:', result);
+            // Вставка результата на страницу
+            document.getElementById("analytics_response").innerText = JSON.stringify(result, null, 3)
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    async function dailyAggregation() {
+        // 1. Получаем данные формы
+        const short_url = document.getElementById('aggregation_daily_url').value;
+        const from = document.getElementById('aggregation_daily_from').value;
+        const to = document.getElementById('aggregation_daily_to').value;
+        const Url = `/aggregated?url=${short_url}&period_type=daily&from=${from}&to=${to}`;
+
+        try {
+            // 2. Выполняем GET-запрос
+            const response = await fetch(Url);
+
+            // Проверяем, успешен ли запрос
+            if (!response.ok) {
+                throw new Error(`Ошибка HTTP: ${response.status}`);
+            }
+
+            // 3. Получаем ответ в формате JSON
+            const result = await response.json();
+
+            // Обрабатываем полученные данные
+            console.log('Server response:', result);
+            // Вставка результата на страницу
+            document.getElementById("analytics_response").innerText = JSON.stringify(result, null, 3)
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    async function monthlyAggregation() {
+        // 1. Получаем данные формы
+        const short_url = document.getElementById('aggregation_monthly_url').value;
+        const from = document.getElementById('aggregation_monthly_from').value;
+        const to = document.getElementById('aggregation_monthly_to').value;
+        const Url = `/aggregated?url=${short_url}&period_type=monthly&from=${from}&to=${to}`;
+
+        try {
+            // 2. Выполняем GET-запрос
+            const response = await fetch(Url);
+
+            // Проверяем, успешен ли запрос
+            if (!response.ok) {
+                throw new Error(`Ошибка HTTP: ${response.status}`);
+            }
+
+            // 3. Получаем ответ в формате JSON
+            const result = await response.json();
+
+            // Обрабатываем полученные данные
+            console.log('Server response:', result);
+            // Вставка результата на страницу
+            document.getElementById("analytics_response").innerText = JSON.stringify(result, null, 3)
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+</script>
+</body>
+</html>
