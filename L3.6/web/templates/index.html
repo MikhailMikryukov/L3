@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L3.6</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        /* Форма добавления */
+        .form-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .form-row label {
+            min-width: 100px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-row input, .form-row select, .form-row textarea {
+            flex: 1;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .type-toggle {
+            display: flex;
+            gap: 20px;
+            padding: 10px 0;
+        }
+
+        .type-toggle label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .type-income {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .type-expense {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        button:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        button.secondary {
+            background: #9ca3af;
+        }
+
+        button.secondary:hover {
+            background: #6b7280;
+        }
+
+        button.danger {
+            background: #ef4444;
+        }
+
+        button.danger:hover {
+            background: #dc2626;
+        }
+
+        /* Фильтры */
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .filter-group input, .filter-group select {
+            padding: 8px 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Таблица */
+        .table-container {
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 15px 10px;
+            text-align: left;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 2px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            background: #f8f9fa;
+            z-index: 10;
+        }
+
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .income-row {
+            background-color: rgba(16, 185, 129, 0.05);
+        }
+
+        .expense-row {
+            background-color: rgba(239, 68, 68, 0.05);
+        }
+
+        .amount-income {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .amount-expense {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .category-badge {
+            background: #e0e7ff;
+            color: #667eea;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .action-btn {
+            padding: 5px 10px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .edit-btn {
+            background: #fbbf24;
+            color: #333;
+        }
+
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Аналитика */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card.income {
+            border-left: 4px solid #10b981;
+        }
+
+        .stat-card.expense {
+            border-left: 4px solid #ef4444;
+        }
+
+        .stat-card.balance {
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .stat-period {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* Категории */
+        .categories-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .category-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .category-name {
+            font-weight: 600;
+        }
+
+        .category-amount {
+            font-weight: 700;
+            color: #ef4444;
+        }
+
+        /* Сообщения */
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .alert.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .alert.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+
+        /* Загрузка */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1> Sales tracker</h1>
+
+    <!-- Сообщения -->
+    <div id="alert" class="alert"></div>
+
+    <!-- Форма добавления -->
+    <div class="card full-width">
+        <h2>Добавить запись</h2>
+        <form id="addForm">
+            <div class="form-row">
+                <label>Тип операции:</label>
+                <div class="type-toggle">
+                    <label>
+                        <input type="radio" name="type" value="income" checked>
+                        <span class="type-income">Доход</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="type" value="expense">
+                        <span class="type-expense">Расход</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <label>Сумма:</label>
+                <input type="number" name="amount" min="0" step="0.01" required>
+            </div>
+
+            <div class="form-row">
+                <label>Дата:</label>
+                <input type="date" name="date" required>
+            </div>
+
+            <div class="form-row">
+                <label>Категория:</label>
+                <select name="category" required>
+                    <option value="">Выберите категорию</option>
+                    <option value="food">Еда</option>
+                    <option value="transport">Транспорт</option>
+                    <option value="entertainment">Развлечения</option>
+                    <option value="shopping">Покупки</option>
+                    <option value="utilities">Коммунальные услуги</option>
+                    <option value="other">Другое</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <label>Комментарий:</label>
+                <textarea name="comment" rows="2"></textarea>
+            </div>
+
+            <button type="submit">Сохранить запись</button>
+        </form>
+    </div>
+
+    <!-- Аналитика -->
+    <div class="grid">
+        <div class="card full-width">
+            <h2>Аналитика за период</h2>
+
+            <!-- Блок выбора периода -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 25px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: end;">
+                    <div>
+                        <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px;">От</label>
+                        <input type="date" id="analyticsDateFrom" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px;">До</label>
+                        <input type="date" id="analyticsDateTo" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <button onclick="loadAnalytics()" style="background: #667eea; color: white; border: none; padding: 10px 25px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                            Получить аналитику
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Быстрые фильтры -->
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button onclick="setPeriod('today')" class="quick-filter" style="background: #e0e7ff; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 13px;">Сегодня</button>
+                    <button onclick="setPeriod('week')" class="quick-filter" style="background: #e0e7ff; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 13px;">Неделя</button>
+                    <button onclick="setPeriod('month')" class="quick-filter" style="background: #e0e7ff; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 13px;">Месяц</button>
+                    <button onclick="setPeriod('quarter')" class="quick-filter" style="background: #e0e7ff; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 13px;">Квартал</button>
+                    <button onclick="setPeriod('year')" class="quick-filter" style="background: #e0e7ff; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 13px;">Год</button>
+                    <button onclick="setPeriod('all')" class="quick-filter" style="background: #e0e7ff; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 13px;">Всё время</button>
+                </div>
+            </div>
+
+            <!-- Статистика -->
+            <div class="stats-grid-analytics"
+                 style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-bottom: 30px;">
+                <div class="stat-card">
+                    <div class="stat-label">Сумма</div>
+                    <div class="stat-value" id="analyticsSum">0 ₽</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Среднее</div>
+                    <div class="stat-value" id="analyticsAvg">0 ₽</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Количество</div>
+                    <div class="stat-value" id="analyticsCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Медиана</div>
+                    <div class="stat-value" id="analyticsMedian">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">90-й перцентиль</div>
+                    <div class="stat-value" id="analyticsPercentile">-</div>
+                </div>
+            </div>
+
+            <h3 style="margin: 20px 0 10px;">По категориям расходов</h3>
+            <div id="categoryStats" class="categories-stats" style="max-height: 300px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="card full-width">
+        <h2>🔍 Фильтры</h2>
+        <form id="filterForm">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label>Тип операции:</label>
+                    <select name="type">
+                        <option value="all">Все операции</option>
+                        <option value="income">Только доходы</option>
+                        <option value="expense">Только расходы</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Категория:</label>
+                    <select name="category">
+                        <option value="all">Все категории</option>
+                        <option value="food">Еда</option>
+                        <option value="transport">Транспорт</option>
+                        <option value="entertainment">Развлечения</option>
+                        <option value="shopping">Покупки</option>
+                        <option value="utilities">Коммунальные услуги</option>
+                        <option value="salary">Зарплата</option>
+                        <option value="other">Другое</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Период:</label>
+                    <select name="period" id="periodSelect">
+                        <option value="all">За всё время</option>
+                        <option value="today">Сегодня</option>
+                        <option value="week">Последние 7 дней</option>
+                        <option value="month">Текущий месяц</option>
+                        <option value="custom">Произвольный</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Сумма от:</label>
+                    <input type="number" name="amount_from" min="0">
+                </div>
+
+                <div class="filter-group">
+                    <label>Сумма до:</label>
+                    <input type="number" name="amount_to" min="0">
+                </div>
+
+                <div class="filter-group">
+                    <label>Поиск по комментарию:</label>
+                    <input type="text" name="search">
+                </div>
+            </div>
+
+            <!-- Произвольный период (скрыт по умолчанию) -->
+            <div id="customPeriod" style="display: none; margin: 15px 0;">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label>С даты:</label>
+                        <input type="date" name="date_from">
+                    </div>
+                    <div class="filter-group">
+                        <label>По дату:</label>
+                        <input type="date" name="date_to">
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit">Применить фильтры</button>
+                <button type="button" class="secondary" onclick="resetFilters()">Сбросить</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Таблица записей -->
+    <div class="card full-width">
+        <h2>📋 Все записи</h2>
+        <div class="table-container" id="tableContainer">
+            <div class="loading">Загрузка данных...</div>
+        </div>
+
+        <!-- Пагинация -->
+        <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <select id="limitSelect" onchange="loadData()">
+                    <option value="10">10 записей</option>
+                    <option value="25" selected>25 записей</option>
+                    <option value="50">50 записей</option>
+                    <option value="100">100 записей</option>
+                </select>
+            </div>
+            <div>
+                <button class="secondary" onclick="previousPage()">← Предыдущая</button>
+                <span id="pageInfo" style="margin: 0 15px;">Страница 1</span>
+                <button class="secondary" onclick="nextPage()">Следующая →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Блок редактирования записи -->
+    <div class="card full-width" style="margin-top: 20px;">
+        <h2>✏️ Редактировать запись по ID</h2>
+
+        <div style="display: grid; grid-template-columns: 2fr 3fr; gap: 20px;">
+            <!-- Левая колонка: ввод ID и выбор полей -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 14px; color: #666; margin-bottom: 5px;">
+                        ID записи <span style="color: red;">*</span>
+                    </label>
+                    <input type="text" id="editId" min="1" placeholder="Введите ID"
+                           style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 14px; color: #666; margin-bottom: 10px;">
+                        Выберите поля для изменения:
+                    </label>
+
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="editTypeCheck" value="type" onchange="toggleEditField('type')">
+                            <span>💰 Тип операции</span>
+                        </label>
+
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="editAmountCheck" value="amount" onchange="toggleEditField('amount')">
+                            <span>💵 Сумма</span>
+                        </label>
+
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="editDateCheck" value="date" onchange="toggleEditField('date')">
+                            <span>📅 Дата</span>
+                        </label>
+
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="editCategoryCheck" value="category" onchange="toggleEditField('category')">
+                            <span>📂 Категория</span>
+                        </label>
+
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="editCommentCheck" value="comment" onchange="toggleEditField('comment')">
+                            <span>💬 Комментарий</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button onclick="loadItemForEdit()" style="background: #9ca3af; width: 100%; margin-bottom: 10px;">
+                    🔍 Загрузить текущие данные
+                </button>
+            </div>
+
+            <!-- Правая колонка: поля для ввода новых значений -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;" id="editFields">
+                <div id="editTypeField" style="display: none; margin-bottom: 20px;">
+                    <label style="display: block; font-size: 14px; color: #666; margin-bottom: 5px;">Тип операции:</label>
+                    <div style="display: flex; gap: 20px; padding: 10px 0;">
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="radio" name="editType" value="income">
+                            <span style="color: #10b981;">💰 Доход</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="radio" name="editType" value="expense">
+                            <span style="color: #ef4444;">💸 Расход</span>
+                        </label>
+                    </div>
+                    <div style="font-size: 12px; color: #666; margin-top: 5px;" id="currentType"></div>
+                </div>
+
+                <div id="editAmountField" style="display: none; margin-bottom: 20px;">
+                    <label style="display: block; font-size: 14px; color: #666; margin-bottom: 5px;">Новая сумма:</label>
+                    <input type="number" id="editAmount" min="0" step="0.01" placeholder="Введите сумму"
+                           style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                    <div style="font-size: 12px; color: #666; margin-top: 5px;" id="currentAmount"></div>
+                </div>
+
+                <div id="editDateField" style="display: none; margin-bottom: 20px;">
+                    <label style="display: block; font-size: 14px; color: #666; margin-bottom: 5px;">Новая дата:</label>
+                    <input type="date" id="editDate" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                    <div style="font-size: 12px; color: #666; margin-top: 5px;" id="currentDate"></div>
+                </div>
+
+                <div id="editCategoryField" style="display: none; margin-bottom: 20px;">
+                    <label style="display: block; font-size: 14px; color: #666; margin-bottom: 5px;">Новая категория:</label>
+                    <select id="editCategory" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                        <option value="">Выберите категорию</option>
+                        <option value="food">🍔 Еда</option>
+                        <option value="transport">🚗 Транспорт</option>
+                        <option value="entertainment">🎮 Развлечения</option>
+                        <option value="shopping">🛍 Покупки</option>
+                        <option value="utilities">💡 Коммунальные услуги</option>
+                        <option value="salary">💼 Зарплата</option>
+                        <option value="other">📦 Другое</option>
+                    </select>
+                    <div style="font-size: 12px; color: #666; margin-top: 5px;" id="currentCategory"></div>
+                </div>
+
+                <div id="editCommentField" style="display: none; margin-bottom: 20px;">
+                    <label style="display: block; font-size: 14px; color: #666; margin-bottom: 5px;">Новый комментарий:</label>
+                    <textarea id="editComment" rows="3" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;"></textarea>
+                    <div style="font-size: 12px; color: #666; margin-top: 5px;" id="currentComment"></div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="updateItem()" style="flex: 2; background: #10b981;">
+                        💾 Сохранить изменения
+                    </button>
+                    <button onclick="clearEditForm()" class="secondary" style="flex: 1;">
+                        🗑️ Очистить
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Статус редактирования -->
+        <div id="editStatus" style="margin-top: 15px; padding: 10px; border-radius: 8px; display: none;"></div>
+    </div>
+</div>
+
+<script>
+    // Состояние приложения
+    let currentPage = 1;
+    let totalPages = 1;
+    let filters = {
+        type: '',
+        category: '',
+        period: '',
+        amount_from: '',
+        amount_to: '',
+        search: '',
+        date_from: '',
+        date_to: ''
+    };
+
+    // Базовый URL API
+    const API_URL = 'http://localhost:8080';
+
+    // Инициализация
+    document.addEventListener('DOMContentLoaded', function () {
+        // Устанавливаем сегодняшнюю дату в форму
+        const today = new Date().toISOString().split('T')[0];
+        document.querySelector('input[name="date"]').value = today;
+
+        // Загружаем данные
+        loadData();
+
+        // Обработчики форм
+        document.getElementById('addForm').addEventListener('submit', handleAddSubmit);
+        document.getElementById('filterForm').addEventListener('submit', handleFilterSubmit);
+
+        // Обработчик выбора периода
+        document.getElementById('periodSelect').addEventListener('change', function (e) {
+            const customPeriod = document.getElementById('customPeriod');
+            customPeriod.style.display = e.target.value === 'custom' ? 'block' : 'none';
+        });
+    });
+
+    // Загрузка данных с бэкенда
+    async function loadData() {
+        showLoading();
+
+        try {
+            // Формируем URL с параметрами
+            const params = new URLSearchParams({
+                page: currentPage,
+                limit: document.getElementById('limitSelect').value,
+                ...buildFilterParams()
+            });
+
+            // Загружаем записи
+            const response = await fetch(`${API_URL}/items?${params}`);
+            if (!response.ok) throw new Error('Ошибка загрузки данных');
+
+            const data = await response.json();
+            renderTable(data.items);
+
+            // Обновляем пагинацию
+            totalPages = data.total_pages;
+            document.getElementById('pageInfo').textContent = `Страница ${currentPage} из ${totalPages}`;
+
+            // Загружаем аналитику
+            loadAnalytics();
+
+        } catch (error) {
+            showAlert('Ошибка: ' + error.message, 'error');
+        }
+    }
+
+    // Установить предустановленный период
+    function setPeriod(period) {
+        const today = new Date();
+        const dateFrom = document.getElementById('analyticsDateFrom');
+        const dateTo = document.getElementById('analyticsDateTo');
+
+        switch(period) {
+            case 'today':
+                dateFrom.value = formatDate(today);
+                dateTo.value = formatDate(today);
+                break;
+
+            case 'week':
+                const weekAgo = new Date(today);
+                weekAgo.setDate(today.getDate() - 7);
+                dateFrom.value = formatDate(weekAgo);
+                dateTo.value = formatDate(today);
+                break;
+
+            case 'month':
+                const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+                dateFrom.value = formatDate(monthStart);
+                dateTo.value = formatDate(today);
+                break;
+
+            case 'quarter':
+                const quarterStart = new Date(today.getFullYear(), Math.floor(today.getMonth() / 3) * 3, 1);
+                dateFrom.value = formatDate(quarterStart);
+                dateTo.value = formatDate(today);
+                break;
+
+            case 'year':
+                const yearStart = new Date(today.getFullYear(), 0, 1);
+                dateFrom.value = formatDate(yearStart);
+                dateTo.value = formatDate(today);
+                break;
+
+            case 'all':
+                dateFrom.value = '';
+                dateTo.value = '';
+                break;
+        }
+
+        // Автоматически загружаем аналитику после установки периода
+        loadAnalytics();
+    }
+
+    // Форматирование даты для input
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    // Обновленная функция загрузки аналитики
+    async function loadAnalytics() {
+        try {
+            // Показываем индикатор загрузки
+            showAnalyticsLoading();
+
+            // Получаем даты из полей ввода
+            const dateFrom = document.getElementById('analyticsDateFrom').value;
+            const dateTo = document.getElementById('analyticsDateTo').value;
+
+            // Формируем параметры запроса
+            const params = new URLSearchParams();
+            if (dateFrom) params.append('from', dateFrom);
+            if (dateTo) params.append('to', dateTo);
+
+            // Добавляем тип операции (анализируем расходы)
+            //params.append('type', 'expense');
+
+            // Отправляем запрос
+            const response = await fetch(`${API_URL}/analytics?${params}`);
+            if (!response.ok) throw new Error('Ошибка загрузки аналитики');
+
+            const statsArray = await response.json();
+            renderAnalytics(statsArray);
+
+        } catch (error) {
+            console.error('Ошибка аналитики:', error);
+            showAlert('Ошибка при загрузке аналитики', 'error');
+
+            // Сбрасываем отображение
+            resetAnalyticsDisplay();
+        }
+    }
+
+    // Показать индикатор загрузки
+    function showAnalyticsLoading() {
+        const elements = ['analyticsSum', 'analyticsAvg', 'analyticsCount', 'analyticsMedian', 'analyticsPercentile'];
+        elements.forEach(id => {
+            document.getElementById(id).innerHTML = '<div class="spinner-small"></div>';
+        });
+        document.getElementById('categoryStats').innerHTML = '<p style="color: #666;">Загрузка...</p>';
+    }
+
+    // Сброс отображения аналитики
+    function resetAnalyticsDisplay() {
+        document.getElementById('analyticsSum').textContent = '0 ₽';
+        document.getElementById('analyticsAvg').textContent = '0 ₽';
+        document.getElementById('analyticsCount').textContent = '0';
+        document.getElementById('analyticsMedian').textContent = '-';
+        document.getElementById('analyticsPercentile').textContent = '-';
+    }
+
+
+    // Добавление записи
+    async function handleAddSubmit(e) {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+
+        const data = {
+            type: formData.get('type'),
+            amount: parseFloat(formData.get('amount')),
+            date: formData.get('date'),
+            category: formData.get('category'),
+            comment: formData.get('comment')
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/items?type=${data.type}&amount=${data.amount}&date=${data.date}&category=${data.category}&comment=${data.comment}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+
+            if (!response.ok) throw new Error('Ошибка при сохранении');
+
+            showAlert('Запись успешно добавлена!', 'success');
+            e.target.reset();
+            document.querySelector('input[name="date"]').value = new Date().toISOString().split('T')[0];
+            loadData();
+
+        } catch (error) {
+            showAlert('Ошибка: ' + error.message, 'error');
+        }
+    }
+
+    // Применение фильтров
+    function handleFilterSubmit(e) {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+        filters = {
+            type: formData.get('type'),
+            category: formData.get('category'),
+            period: formData.get('period'),
+            amount_from: formData.get('amount_from'),
+            amount_to: formData.get('amount_to'),
+            search: formData.get('search'),
+            date_from: formData.get('date_from'),
+            date_to: formData.get('date_to')
+        };
+
+        currentPage = 1;
+        loadData();
+    }
+
+    // Сброс фильтров
+    function resetFilters() {
+        document.getElementById('filterForm').reset();
+        filters = {
+            type: '',
+            category: '',
+            period: '',
+            amount_from: '',
+            amount_to: '',
+            search: '',
+            date_from: '',
+            date_to: ''
+        };
+        document.getElementById('customPeriod').style.display = 'none';
+        currentPage = 1;
+        loadData();
+    }
+
+    // Построение параметров фильтров для API
+    function buildFilterParams() {
+        const params = {};
+
+        if (filters.type && filters.type !== '') {
+            params.type = filters.type;
+        }
+
+        if (filters.category && filters.category !== '') {
+            params.category = filters.category;
+        }
+
+        if (filters.period === 'today') {
+            const today = new Date().toISOString().split('T')[0];
+            params.date_from = today;
+            params.date_to = today;
+        } else if (filters.period === 'week') {
+            const to = new Date();
+            const from = new Date();
+            from.setDate(from.getDate() - 7);
+            params.date_from = from.toISOString().split('T')[0];
+            params.date_to = to.toISOString().split('T')[0];
+        } else if (filters.period === 'month') {
+            const to = new Date();
+            const from = new Date(to.getFullYear(), to.getMonth(), 1);
+            params.date_from = from.toISOString().split('T')[0];
+            params.date_to = to.toISOString().split('T')[0];
+        } else if (filters.period === 'custom') {
+            if (filters.date_from) params.from = filters.date_from;
+            if (filters.date_to) params.to = filters.date_to;
+        }
+
+        if (filters.amount_from) {
+            params.amountMin = filters.amount_from;
+        }
+
+        if (filters.amount_to) {
+            params.amountMax = filters.amount_to;
+        }
+
+        if (filters.search) {
+            params.search = filters.search;
+        }
+
+        return params;
+    }
+
+    // Отрисовка таблицы
+    function renderTable(items) {
+        const container = document.getElementById('tableContainer');
+
+        if (!items || items.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 50px; color: #666;">Нет записей</div>';
+            return;
+        }
+
+        let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Дата</th>
+                            <th>Тип</th>
+                            <th>Категория</th>
+                            <th>Сумма</th>
+                            <th>Комментарий</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+        items.forEach(item => {
+            const rowClass = item.type === 'income' ? 'income-row' : 'expense-row';
+            const amountClass = item.type === 'income' ? 'amount-income' : 'amount-expense';
+            const amountSign = item.type === 'income' ? '+' : '-';
+
+            html += `
+                    <tr class="${rowClass}">
+                        <td>${item.id}</td>
+                        <td>${item.date}</td>
+                        <td>${item.type}</td>
+                        <td><span class="category-badge">${item.category}</span></td>
+                        <td class="${amountClass}">${amountSign}${formatAmount(item.amount)} ₽</td>
+                        <td>${item.comment || '-'}</td>
+                        <td>
+
+                            <button class="action-btn delete-btn" onclick="deleteItem('${item.id}')">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    // Отрисовка аналитики по категориям
+    function renderAnalytics(statsArray) {
+        if (!statsArray || statsArray.length === 0) {
+            // Показываем пустые значения
+            const emptyFields = ['analyticsSum', 'analyticsAvg', 'analyticsCount', 'analyticsMedian', 'analyticsPercentile'];
+            emptyFields.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = id.includes('Count') ? '0' : '-';
+                }
+            });
+            document.getElementById('categoryStats').innerHTML = '<p style="color: #666;">Нет данных за период</p>';
+            return;
+        }
+
+        // Суммируем общие показатели по всем категориям
+        const totalStats = statsArray.reduce((acc, stat) => {
+            acc.sum += stat.sum;
+            acc.avg += stat.avg; // Суммируем средние (можно пересчитать)
+            acc.count += stat.count;
+            // Для медианы и перцентиля берем среднее или максимальное
+            acc.median = Math.max(acc.median, stat.median);
+            acc.percentile90 = Math.max(acc.percentile90, stat.percentile90);
+            return acc;
+        }, {sum: 0, avg: 0, count: 0, median: 0, percentile90: 0});
+
+        // Корректируем среднее (если нужно)
+        if (statsArray.length > 0) {
+            totalStats.avg = Math.round(totalStats.sum / totalStats.count);
+        }
+
+        // Основные показатели
+        document.getElementById('analyticsSum').textContent = formatAmount(totalStats.sum) + ' ₽';
+        document.getElementById('analyticsAvg').textContent = formatAmount(totalStats.avg) + ' ₽';
+        document.getElementById('analyticsCount').textContent = totalStats.count;
+        document.getElementById('analyticsMedian').textContent = formatAmount(totalStats.median) + ' ₽';
+        document.getElementById('analyticsPercentile').textContent = formatAmount(totalStats.percentile90) + ' ₽';
+
+        // Статистика по категориям
+        const categoryStats = document.getElementById('categoryStats');
+        let html = '';
+
+        statsArray.forEach(stat => {
+            html += `
+            <div class="category-stat" style="border-bottom: 1px solid #eee; padding: 10px; margin-bottom: 5px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="category-name">${stat.category}</span>
+                    <span class="category-amount">${formatAmount(stat.sum)} ₽</span>
+                </div>
+                <div style="display: flex; gap: 15px; font-size: 12px; color: #666; margin-top: 5px;">
+                    <span>📊 Среднее: ${formatAmount(stat.avg)} ₽</span>
+                    <span>📈 Медиана: ${formatAmount(stat.median)} ₽</span>
+                    <span>📉 90%: ${formatAmount(stat.percentile90)} ₽</span>
+                    <span>🔢 Кол-во: ${stat.count}</span>
+                </div>
+            </div>
+        `;
+        });
+
+        categoryStats.innerHTML = html;
+    }
+
+    // Отрисовка графика
+    function renderChart(dailyStats) {
+        const chart = document.getElementById('chart');
+
+        if (!dailyStats || dailyStats.length === 0) {
+            chart.innerHTML = '<p style="color: #666; text-align: center;">Нет данных для графика</p>';
+            return;
+        }
+
+        // Находим максимальное значение для масштабирования
+        const maxValue = Math.max(
+            ...dailyStats.map(d => d.income),
+            ...dailyStats.map(d => d.expense)
+        );
+
+        let html = '';
+        dailyStats.slice(-7).forEach(day => {
+            const incomeHeight = (day.income / maxValue) * 200;
+            const expenseHeight = (day.expense / maxValue) * 200;
+
+            html += `
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                        <div style="display: flex; gap: 2px; align-items: flex-end; height: 200px;">
+                            <div style="width: 30px; background: #10b981; height: ${incomeHeight}px; border-radius: 5px 5px 0 0;"></div>
+                            <div style="width: 30px; background: #ef4444; height: ${expenseHeight}px; border-radius: 5px 5px 0 0;"></div>
+                        </div>
+                        <span style="font-size: 10px;">${day.date}</span>
+                    </div>
+                `;
+        });
+
+        chart.innerHTML = html;
+    }
+
+    // Переменные для хранения текущих значений
+    let currentItemData = {};
+
+    // Показать/скрыть поля для редактирования
+    function toggleEditField(fieldName) {
+        const checkbox = document.getElementById(`edit${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}Check`);
+        const field = document.getElementById(`edit${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}Field`);
+
+        if (field) {
+            field.style.display = checkbox.checked ? 'block' : 'none';
+        }
+    }
+
+    // Загрузить данные записи для редактирования
+    async function loadItemForEdit() {
+        const id = document.getElementById('editId').value;
+
+        if (!id) {
+            showEditStatus('Введите ID записи', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/items/${id}`);
+            if (!response.ok) {
+                throw new Error('Запись не найдена');
+            }
+
+            const item = await response.json();
+            currentItemData = item;
+
+            // Показываем текущие значения
+            document.getElementById('currentType').innerHTML = `Текущий тип: <strong>${item.type === 'income' ? 'Доход' : 'Расход'}</strong>`;
+            document.getElementById('currentAmount').innerHTML = `Текущая сумма: <strong>${formatAmount(item.amount)} ₽</strong>`;
+            document.getElementById('currentDate').innerHTML = `Текущая дата: <strong>${item.date}</strong>`;
+            document.getElementById('currentCategory').innerHTML = `Текущая категория: <strong>${item.category}</strong>`;
+            document.getElementById('currentComment').innerHTML = `Текущий комментарий: <strong>${item.comment || '-'}</strong>`;
+
+            // Предзаполняем поля текущими значениями
+            if (document.getElementById('editAmount')) {
+                document.getElementById('editAmount').value = item.amount;
+            }
+            if (document.getElementById('editDate')) {
+                document.getElementById('editDate').value = item.date;
+            }
+            if (document.getElementById('editCategory')) {
+                document.getElementById('editCategory').value = item.category;
+            }
+            if (document.getElementById('editComment')) {
+                document.getElementById('editComment').value = item.comment || '';
+            }
+
+            // Устанавливаем radio button для типа
+            const typeRadio = document.querySelector(`input[name="editType"][value="${item.type}"]`);
+            if (typeRadio) {
+                typeRadio.checked = true;
+            }
+
+            showEditStatus('Данные загружены', 'success');
+
+        } catch (error) {
+            showEditStatus('Ошибка: ' + error.message, 'error');
+        }
+    }
+
+    // Обновить запись
+    async function updateItem() {
+        const id = document.getElementById('editId').value;
+
+        if (!id) {
+            showEditStatus('Введите ID записи', 'error');
+            return;
+        }
+
+        // Собираем только выбранные поля
+        const updates = {};
+
+        if (document.getElementById('editTypeCheck').checked) {
+            const selectedType = document.querySelector('input[name="editType"]:checked');
+            if (!selectedType) {
+                showEditStatus('Выберите тип операции', 'error');
+                return;
+            }
+            updates.type = selectedType.value;
+        }
+
+        if (document.getElementById('editAmountCheck').checked) {
+            const amount = document.getElementById('editAmount').value;
+            if (!amount) {
+                showEditStatus('Введите сумму', 'error');
+                return;
+            }
+            updates.amount = parseFloat(amount);
+        }
+
+        if (document.getElementById('editDateCheck').checked) {
+            const date = document.getElementById('editDate').value;
+            if (!date) {
+                showEditStatus('Введите дату', 'error');
+                return;
+            }
+            updates.date = date;
+        }
+
+        if (document.getElementById('editCategoryCheck').checked) {
+            const category = document.getElementById('editCategory').value;
+            if (!category) {
+                showEditStatus('Выберите категорию', 'error');
+                return;
+            }
+            updates.category = category;
+        }
+
+        if (document.getElementById('editCommentCheck').checked) {
+            updates.comment = document.getElementById('editComment').value;
+        }
+
+        if (Object.keys(updates).length === 0) {
+            showEditStatus('Выберите поля для обновления', 'error');
+            return;
+        }
+
+        const params = new URLSearchParams({
+            ...updates
+        });
+        try {
+            const response = await fetch(`${API_URL}/items/${id}?${params}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Ошибка при обновлении');
+            }
+
+            showEditStatus('Запись успешно обновлена!', 'success');
+
+            // Обновляем таблицу
+            loadData();
+
+            // Обновляем отображаемые текущие значения
+            loadItemForEdit();
+
+        } catch (error) {
+            showEditStatus('Ошибка: ' + error.message, 'error');
+        }
+    }
+
+    // Очистить форму редактирования
+    function clearEditForm() {
+        document.getElementById('editId').value = '';
+
+        // Снимаем все чекбоксы
+        const checkboxes = document.querySelectorAll('#editFields input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+            cb.checked = false;
+            const fieldName = cb.value;
+            const field = document.getElementById(`edit${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}Field`);
+            if (field) {
+                field.style.display = 'none';
+            }
+        });
+
+        // Очищаем поля
+        document.getElementById('editAmount').value = '';
+        document.getElementById('editDate').value = '';
+        document.getElementById('editCategory').value = '';
+        document.getElementById('editComment').value = '';
+
+        // Снимаем выбор с radio
+        const radios = document.querySelectorAll('input[name="editType"]');
+        radios.forEach(r => r.checked = false);
+
+        // Очищаем текущие значения
+        ['Type', 'Amount', 'Date', 'Category', 'Comment'].forEach(field => {
+            const el = document.getElementById(`current${field}`);
+            if (el) el.innerHTML = '';
+        });
+
+        currentItemData = {};
+        showEditStatus('', 'hide');
+    }
+
+    // Показать статус редактирования
+    function showEditStatus(message, type) {
+        const status = document.getElementById('editStatus');
+
+        if (type === 'hide' || !message) {
+            status.style.display = 'none';
+            return;
+        }
+
+        status.style.display = 'block';
+        status.textContent = message;
+        status.className = type === 'success' ? 'alert success' : 'alert error';
+    }
+
+    // Удаление записи
+    async function deleteItem(id) {
+        if (!confirm('Вы уверены, что хотите удалить запись?')) return;
+
+        try {
+            const response = await fetch(`${API_URL}/items/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) throw new Error('Ошибка при удалении');
+
+            showAlert('Запись удалена!', 'success');
+            loadData();
+
+        } catch (error) {
+            showAlert('Ошибка: ' + error.message, 'error');
+        }
+    }
+
+    // Пагинация
+    function previousPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            loadData();
+        }
+    }
+
+    function nextPage() {
+        if (currentPage < totalPages) {
+            currentPage++;
+            loadData();
+        }
+    }
+
+    // Вспомогательные функции
+    function showLoading() {
+        document.getElementById('tableContainer').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Загрузка данных...</p>
+                </div>
+            `;
+    }
+
+    function showAlert(message, type) {
+        const alert = document.getElementById('alert');
+        alert.textContent = message;
+        alert.className = `alert ${type}`;
+        alert.style.display = 'block';
+
+        setTimeout(() => {
+            alert.style.display = 'none';
+        }, 3000);
+    }
+
+    function formatAmount(amount) {
+        return new Intl.NumberFormat('ru-RU').format(amount);
+    }
+
+</script>
+</body>
+</html>
