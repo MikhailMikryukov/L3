@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Сервис комментариев</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 30px;
+      margin-top: 20px;
+    }
+
+    .sidebar {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      height: fit-content;
+    }
+
+    .main-content {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    h2 {
+      color: #3498db;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #eee;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #555;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #3498db;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    button {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: background 0.3s;
+      width: 100%;
+    }
+
+    button:hover {
+      background: #2980b9;
+    }
+
+    .btn-danger {
+      background: #e74c3c;
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 12px;
+      width: auto;
+      margin-right: 5px;
+    }
+
+    .comment {
+      background: #fff;
+      border-left: 4px solid #3498db;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 0 5px 5px 0;
+      position: relative;
+    }
+
+    .comment-content {
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    .comment-meta {
+      font-size: 12px;
+      color: #7f8c8d;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .comment-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+
+    .page-btn {
+      padding: 8px 15px;
+      background: #ecf0f1;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .page-btn:hover {
+      background: #bdc3c7;
+    }
+
+    .page-btn.active {
+      background: #3498db;
+      color: white;
+    }
+
+    .search-results {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 5px;
+      border-left: 4px solid #2ecc71;
+    }
+
+    .nested-comment {
+      margin-left: 40px;
+      border-left-color: #2ecc71;
+    }
+
+    .depth-1 { margin-left: 40px; border-left-color: #3498db; }
+    .depth-2 { margin-left: 80px; border-left-color: #9b59b6; }
+    .depth-3 { margin-left: 120px; border-left-color: #e74c3c; }
+    .depth-4 { margin-left: 160px; border-left-color: #f39c12; }
+    .depth-5 { margin-left: 200px; border-left-color: #1abc9c; }
+
+    .highlight {
+      background-color: #fffacd;
+      padding: 2px;
+      border-radius: 2px;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #95a5a6;
+      padding: 40px;
+      font-style: italic;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #7f8c8d;
+    }
+
+    .error {
+      background: #ffeaea;
+      color: #e74c3c;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+      border-left: 4px solid #e74c3c;
+    }
+
+    .success {
+      background: #e8f6e8;
+      color: #27ae60;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+      border-left: 4px solid #27ae60;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+
+      .depth-5 { margin-left: 120px; }
+      .depth-4 { margin-left: 90px; }
+      .depth-3 { margin-left: 60px; }
+      .depth-2 { margin-left: 30px; }
+      .depth-1 { margin-left: 15px; }
+    }
+  </style>
+</head>
+<body>
+<h1> Сервис комментариев</h1>
+
+<div class="container">
+  <!-- Боковая панель для создания и поиска -->
+  <div class="sidebar">
+    <!-- Форма создания комментария -->
+    <div class="form-section">
+      <h2> Новый комментарий</h2>
+      <form id="commentForm">
+        <div class="form-group">
+          <label for="author">Автор:</label>
+          <input type="text" id="author" required>
+        </div>
+
+        <div class="form-group">
+          <label for="content">Комментарий:</label>
+          <textarea id="content" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="parentId">Ответ на (необязательно):</label>
+          <select id="parentId">
+            <option value="">Новый комментарий</option>
+          </select>
+        </div>
+
+        <button type="submit">Добавить комментарий</button>
+      </form>
+    </div>
+
+    <!-- Поиск -->
+    <div class="form-section" style="margin-top: 30px;">
+      <h2> Поиск комментариев</h2>
+
+      <!-- Поиск по ключевым словам -->
+      <div class="form-group">
+        <label for="searchQuery">Ключевые слова:</label>
+        <input type="text" id="searchQuery" placeholder="Введите слова для поиска...">
+      </div>
+
+      <!-- Поиск по ID -->
+      <div class="form-group">
+        <label for="searchById">Поиск по ID комментария:</label>
+        <div style="display: flex; gap: 10px;">
+          <input type="number" id="searchById" placeholder="Введите ID комментария" min="1" style="flex: 1;">
+          <button id="searchByIdBtn" class="btn-sm" style="width: auto;">Найти</button>
+        </div>
+        <small style="color: #666; display: block; margin-top: 5px;">
+           Покажет комментарий и все ответы на него
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="sortBy">Сортировка:</label>
+        <select id="sortBy">
+          <option value="created_at">По дате (новые сначала)</option>
+          <option value="created_at_asc">По дате (старые сначала)</option>
+          <option value="author">По автору</option>
+        </select>
+      </div>
+
+      <button id="searchBtn">Искать по словам</button>
+      <button id="clearSearch" class="btn-danger" style="margin-top: 10px;">Очистить поиск</button>
+    </div>
+  </div>
+
+  <!-- Основное содержимое -->
+  <div class="main-content">
+    <h2> Все комментарии</h2>
+
+    <div id="commentsList">
+      <div class="loading">Загрузка комментариев...</div>
+    </div>
+
+    <div id="pagination" class="pagination"></div>
+  </div>
+</div>
+
+<script>
+  // Конфигурация API
+  const API_BASE_URL = 'http://localhost:8080';
+  let currentPage = 1;
+  let totalPages = 1;
+  let currentSearch = '';
+  let currentSort = 'created_at';
+
+  // Загрузка комментариев при старте
+  document.addEventListener('DOMContentLoaded', () => {
+    loadComments();
+    loadParentOptions();
+
+    // Обработчики событий
+    document.getElementById('commentForm').addEventListener('submit', createComment);
+    document.getElementById('searchBtn').addEventListener('click', performSearch);
+    document.getElementById('clearSearch').addEventListener('click', clearSearch);
+    document.getElementById('searchByIdBtn').addEventListener('click', searchCommentById);
+    document.getElementById('sortBy').addEventListener('change', (e) => {
+      currentSort = e.target.value;
+      loadComments();
+    });
+  });
+
+  // Загрузка списка комментариев
+  async function loadComments(page = 1) {
+    try {
+      document.getElementById('commentsList').innerHTML = '<div class="loading">Загрузка комментариев...</div>';
+
+      const params = new URLSearchParams({
+        page: page,
+        limit: 20,
+        sort_by: currentSort
+      });
+
+      if (currentSearch) {
+        params.append('search', currentSearch);
+      }
+
+      const response = await fetch(`${API_BASE_URL}/comments/load?${params}`);
+      const data = await response.json();
+
+      if (data.success) {
+        currentPage = data.page;
+        totalPages = data.total_pages;
+        displayComments(data.comments);
+        updatePagination();
+      } else {
+        showError(data.error || 'Ошибка загрузки комментариев');
+      }
+    } catch (error) {
+      showError('Ошибка соединения с сервером');
+      console.error('Error:', error);
+    }
+  }
+
+  // Отображение комментариев в виде дерева
+  function displayComments(comments) {
+    const container = document.getElementById('commentsList');
+
+    if (!comments || comments.length === 0) {
+      container.innerHTML = '<div class="empty-state">Комментариев пока нет.</div>';
+      return;
+    }
+
+    // Строим дерево комментариев
+    const commentMap = new Map();
+    const rootComments = [];
+
+    // Сначала добавляем все комментарии в map
+    comments.forEach(comment => {
+      comment.children = [];
+      commentMap.set(comment.id, comment);
+    });
+
+    // Строим иерархию
+    comments.forEach(comment => {
+      if (comment.parent_id) {
+        const parent = commentMap.get(comment.parent_id);
+        if (parent) {
+          parent.children.push(comment);
+        } else {
+          rootComments.push(comment);
+        }
+      } else {
+        rootComments.push(comment);
+      }
+    });
+
+    // Рекурсивно рендерим дерево
+    container.innerHTML = '';
+    rootComments.forEach(comment => {
+      renderComment(comment, 0, container);
+    });
+  }
+
+  // Рекурсивный рендеринг комментария с вложенностью
+  function renderComment(comment, depth, container) {
+    const commentDiv = document.createElement('div');
+    commentDiv.className = `comment depth-${Math.min(depth, 5)}`;
+
+    // Подсветка результатов поиска
+    let content = comment.text;
+    if (currentSearch) {
+      const regex = new RegExp(`(${currentSearch.split(' ').join('|')})`, 'gi');
+      content = content.replace(regex, '<span class="highlight">$1</span>');
+    }
+
+    commentDiv.innerHTML = `
+                <div class="comment-meta">
+                    <span><strong>${escapeHtml(comment.author)}</strong></span>
+                    <span>${new Date(comment.created_at).toLocaleString()}</span>
+                </div>
+                <div class="comment-content">${content}</div>
+                <div class="comment-actions">
+                    <button class="btn-sm reply-btn" data-id="${comment.id}">Ответить</button>
+                    <button class="btn-sm btn-danger delete-btn" data-id="${comment.id}">Удалить</button>
+                </div>
+            `;
+
+    container.appendChild(commentDiv);
+
+    // Рендерим дочерние комментарии
+    if (comment.children && comment.children.length > 0) {
+      comment.children.forEach(child => {
+        renderComment(child, depth + 1, container);
+      });
+    }
+
+    // Добавляем обработчики событий
+    commentDiv.querySelector('.reply-btn').addEventListener('click', (e) => {
+      setParentComment(e.target.dataset.id, comment.author);
+    });
+
+    commentDiv.querySelector('.delete-btn').addEventListener('click', (e) => {
+      deleteComment(e.target.dataset.id);
+    });
+  }
+
+  // Создание нового комментария
+  async function createComment(e) {
+    e.preventDefault();
+
+    const author = document.getElementById('author').value.trim();
+    const text = document.getElementById('content').value.trim();
+    let parentId = document.getElementById('parentId').value;
+
+    if (parentId === "") {
+      parentId = "0"
+    }
+    if (!author || !text) {
+      showError('Пожалуйста, заполните все обязательные поля');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/comments?author=${author}&parent=${parentId}&text=${text}`, {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showSuccess('Комментарий успешно добавлен!');
+        document.getElementById('commentForm').reset();
+        document.getElementById('parentId').value = '';
+        loadComments();
+        loadParentOptions();
+      } else {
+        showError(data.error || 'Ошибка при создании комментария');
+      }
+    } catch (error) {
+      showError('Ошибка соединения с сервером');
+      console.error('Error:', error);
+    }
+  }
+
+  // Удаление комментария
+  async function deleteComment(commentId) {
+    if (!confirm('Вы уверены, что хотите удалить этот комментарий?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/comments?id=${commentId}`, {
+        method: 'DELETE'
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showSuccess('Комментарий удален');
+        loadComments();
+        loadParentOptions();
+      } else {
+        showError(data.error || 'Ошибка при удалении комментария');
+      }
+    } catch (error) {
+      showError('Ошибка соединения с сервером');
+      console.error('Error:', error);
+    }
+  }
+
+  // Поиск комментариев
+  async function performSearch() {
+    const query = document.getElementById('searchQuery').value.trim();
+
+    if (!query) {
+      showError('Введите ключевые слова для поиска');
+      return;
+    }
+
+    currentSearch = query;
+    currentPage = 1;
+    loadComments();
+  }
+
+  // Очистка поиска
+  function clearSearch() {
+    document.getElementById('searchQuery').value = '';
+    currentSearch = '';
+    currentPage = 1;
+    loadComments();
+  }
+
+  // Установка родительского комментария для ответа
+  function setParentComment(commentId, authorName) {
+    document.getElementById('parentId').value = commentId;
+    document.getElementById('content').focus();
+    showSuccess(`Вы отвечаете на комментарий ${authorName}`);
+  }
+
+  // Загрузка опций для выбора родительского комментария
+  async function loadParentOptions() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/comments/flat?limit=99`);
+      const data = await response.json();
+      if (data.success) {
+        const select = document.getElementById('parentId');
+        // Сохраняем текущее значение
+        const currentValue = select.value;
+
+        // Очищаем и добавляем только опцию "Новый комментарий"
+        select.innerHTML = '<option value="">Новый комментарий</option>';
+
+        // Добавляем все комментарии как опции
+        data.comments.forEach(comment => {
+          const option = document.createElement('option');
+          option.value = comment.id;
+          option.textContent = `${comment.author}: ${comment.text.substring(0, 50)}...`;
+          select.appendChild(option);
+        });
+
+        // Восстанавливаем предыдущее значение
+        if (currentValue) {
+          select.value = currentValue;
+        }
+      }
+    } catch (error) {
+      console.error('Error loading parent options:', error);
+    }
+  }
+
+  // Функция для поиска комментария по ID
+  async function searchCommentById() {
+    const commentId = document.getElementById('searchById').value.trim();
+
+    if (!commentId) {
+      showError('Введите ID комментария');
+      return;
+    }
+
+    try {
+      // Запрос к API для получения комментария по ID со всеми вложенными
+      const response = await fetch(`${API_BASE_URL}/comments?parent=${commentId}`);
+      const data = await response.json();
+
+      if (data.success) {
+        // Сбрасываем поиск по словам, чтобы не было путаницы
+        currentSearch = '';
+        document.getElementById('searchQuery').value = '';
+
+        // Отображаем найденный комментарий и его ветку
+        if (data.comments && data.comments.length > 0) {
+          // Подсвечиваем искомый комментарий
+          displayCommentThread(data.comments, parseInt(commentId));
+          showSuccess(`Найден комментарий ID: ${commentId} и ${data.comments.length - 1} ответов`);
+        } else {
+          document.getElementById('commentsList').innerHTML = '<div class="empty-state">Комментарий не найден</div>';
+        }
+
+        // Скрываем пагинацию при поиске по ID
+        document.getElementById('pagination').innerHTML = '';
+      } else {
+        showError(data.error || 'Комментарий не найден');
+      }
+    } catch (error) {
+      console.error('Error searching by ID:', error);
+      showError('Ошибка при поиске комментария');
+    }
+  }
+
+  // Функция для отображения ветки комментариев
+  function displayCommentThread(comments, highlightId) {
+    const container = document.getElementById('commentsList');
+    container.innerHTML = '';
+
+    if (!comments || comments.length === 0) return;
+
+    // Строим дерево
+    const commentMap = new Map();
+    const rootComments = [];
+
+    comments.forEach(comment => {
+      comment.children = [];
+      comment.isHighlighted = comment.id === highlightId;
+      commentMap.set(comment.id, comment);
+    });
+
+    // Находим корневой комментарий (тот у которого нет родителя в этой выборке)
+    comments.forEach(comment => {
+      if (comment.parent_id && commentMap.has(comment.parent_id)) {
+        const parent = commentMap.get(comment.parent_id);
+        parent.children.push(comment);
+      } else {
+        rootComments.push(comment);
+      }
+    });
+
+    // Рендерим с подсветкой
+    rootComments.forEach(comment => {
+      renderCommentThread(comment, 0, container, highlightId);
+    });
+  }
+
+  // Функция для рендеринга ветки с подсветкой
+  function renderCommentThread(comment, depth, container, highlightId) {
+    const commentDiv = document.createElement('div');
+
+    // Добавляем класс для подсветки, если это искомый комментарий
+    const highlightClass = comment.id === highlightId ? 'search-highlight' : '';
+    commentDiv.className = `comment depth-${Math.min(depth, 5)} ${highlightClass}`;
+
+    // Добавляем индикатор, если это корень ветки
+    const rootLabel = depth === 0 && comment.id !== highlightId ?
+            '<span class="context-badge">(начало ветки)</span>' : '';
+
+    commentDiv.innerHTML = `
+        <div class="comment-meta">
+            <span>
+                <strong>${escapeHtml(comment.author)}</strong>
+                #${comment.id}
+                ${rootLabel}
+                ${comment.id === highlightId ? '<span class="context-badge" style="background-color: #ff9800;">(искомый)</span>' : ''}
+            </span>
+            <span>${new Date(comment.created_at).toLocaleString()}</span>
+        </div>
+        <div class="comment-content">${escapeHtml(comment.text)}</div>
+        <div class="comment-actions">
+            <button class="btn-sm reply-btn" data-id="${comment.id}">Ответить</button>
+            <button class="btn-sm btn-danger delete-btn" data-id="${comment.id}">Удалить</button>
+        </div>
+    `;
+
+    container.appendChild(commentDiv);
+
+    // Добавляем дочерние комментарии
+    if (comment.children && comment.children.length > 0) {
+      comment.children.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      comment.children.forEach(child => {
+        renderCommentThread(child, depth + 1, container, highlightId);
+      });
+    }
+
+    // Добавляем обработчики
+    commentDiv.querySelector('.reply-btn')?.addEventListener('click', (e) => {
+      setParentComment(e.target.dataset.id, comment.author);
+    });
+
+    commentDiv.querySelector('.delete-btn')?.addEventListener('click', (e) => {
+      deleteComment(e.target.dataset.id);
+    });
+  }
+
+  // Обновление пагинации
+  function updatePagination() {
+    const pagination = document.getElementById('pagination');
+
+    if (totalPages <= 1) {
+      pagination.innerHTML = '';
+      return;
+    }
+
+    let html = '';
+
+    // Кнопка "Назад"
+    if (currentPage > 1) {
+      html += `<button class="page-btn" onclick="loadComments(${currentPage - 1})">←</button>`;
+    }
+
+    // Номера страниц
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+        html += `<button class="page-btn ${i === currentPage ? 'active' : ''}"
+                             onclick="loadComments(${i})">${i}</button>`;
+      } else if (i === currentPage - 3 || i === currentPage + 3) {
+        html += `<span class="page-btn">...</span>`;
+      }
+    }
+
+    // Кнопка "Вперед"
+    if (currentPage < totalPages) {
+      html += `<button class="page-btn" onclick="loadComments(${currentPage + 1})">→</button>`;
+    }
+
+    pagination.innerHTML = html;
+  }
+
+  // Утилиты
+  function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error';
+    errorDiv.textContent = message;
+
+    document.querySelector('.main-content').insertBefore(errorDiv, document.getElementById('commentsList'));
+
+    setTimeout(() => errorDiv.remove(), 5000);
+  }
+
+  function showSuccess(message) {
+    const successDiv = document.createElement('div');
+    successDiv.className = 'success';
+    successDiv.textContent = message;
+
+    document.querySelector('.main-content').insertBefore(successDiv, document.getElementById('commentsList'));
+
+    setTimeout(() => successDiv.remove(), 3000);
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Экспортируем функции для использования в onclick
+  window.loadComments = loadComments;
+</script>
+</body>
+</html>
