@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+    <div>
+        <label for="send_at">Время отправки уведомления (формат YYYY-MM-DD hh:mm:ss):</label><input id="send_at" type="text" required>
+        <label for="event">Уведомление:</label><input id="event" type="text" required>
+        <button type="submit" onclick="createNotification()">Создать</button>
+    </div>
+    <hr>
+    <div>
+        <label for="status">Получить статус уведомления:</label><input id="status" type="text" required>
+        <button type="submit" onclick="getNotificationStatus()">Получить</button>
+    </div>
+    <hr>
+    <div>
+        <label for="cancel"></label>Отменить уведомление:<input id="cancel" type="text" required>
+        <button type="submit" onclick="deleteNotification()">Отменить</button>
+    </div>
+    <hr>
+    <div>
+        <label>Показать все уведомления:</label>
+        <a id="all_notifications" href="/all_notifications">показать</a>
+    </div>
+    <p id="response"></p>
+
+<script>
+    async function createNotification() {
+        // 1. Получаем данные формы
+        const sendAt = document.getElementById('send_at').value;
+        const event = document.getElementById('event').value;
+        const Url = `/notify?date=${sendAt}&event=${event}`;
+
+
+        try {
+            // 2. Выполняем POST-запрос
+            const response = await fetch(Url, {
+                method : 'POST'
+            });
+
+            // Проверяем, успешен ли запрос
+            if (!response.ok) {
+                throw new Error(`Ошибка HTTP: ${response.status}`);
+            }
+
+            // 3. Получаем ответ в формате JSON
+            const result = await response.json();
+
+            // Обрабатываем полученные данные
+            console.log('Server response:', result);
+            // Вставка результата на страницу
+            document.getElementById("response").innerText = result.toString()
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    async function getNotificationStatus() {
+        // 1. Получаем данные формы
+        const id = document.getElementById('status').value;
+        const Url = `/notify/${id}`;
+
+        try {
+            // 2. Выполняем GET-запрос с помощью fetch()
+            const response = await fetch(Url);
+
+            // Проверяем, успешен ли запрос
+            if (!response.ok) {
+                throw new Error(`Ошибка HTTP: ${response.status}`);
+            }
+
+            // 3. Получаем ответ в формате JSON
+            const result = await response.json();
+
+            // Обрабатываем полученные данные
+            console.log('Server response:', result);
+            // Вставка результата на страницу
+            document.getElementById("response").innerText = result.toString()
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    async function deleteNotification() {
+        // 1. Получаем данные формы
+        const id = document.getElementById('cancel').value;
+        const Url = `/notify/${id}`;
+
+        try {
+            // 2. Выполняем DELETE-запрос
+            const response = await fetch(Url, {
+                method : 'DELETE'
+            });
+
+            // Проверяем, успешен ли запрос
+            if (!response.ok) {
+                throw new Error(`Ошибка HTTP: ${response.status}`);
+            }
+
+            // 3. Получаем ответ в формате JSON
+            const result = await response.json();
+
+            // Обрабатываем полученные данные
+            console.log('Server response:', result);
+            // Вставка результата на страницу
+            document.getElementById("response").innerText = result.toString()
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+</script>
+</body>
+</html>
