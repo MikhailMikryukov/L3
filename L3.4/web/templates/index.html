@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Сервис обработки изображений</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        label {
+            display: inline-block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="file"], input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input[type="checkbox"] {
+            margin-left: 0;
+            margin-right: 10px;
+        }
+        button, input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        button:hover, input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .delete-btn {
+            background-color: #f44336;
+        }
+        .delete-btn:hover {
+            background-color: #da190b;
+        }
+        .get-btn {
+            background-color: #2196F3;
+        }
+        .get-btn:hover {
+            background-color: #0b7dda;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+            display: none;
+        }
+        .result pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .task-id-input {
+            width: 300px;
+            display: inline-block;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .error {
+            color: #f44336;
+            padding: 10px;
+            background-color: #ffebee;
+            border-radius: 4px;
+        }
+        .success {
+            color: #4CAF50;
+            padding: 10px;
+            background-color: #e8f5e8;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Сервис обработки изображений</h1>
+
+    <div class="form-group">
+        <h2>1. Загрузить изображение</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <label for="file">Выберите файл для загрузки:</label>
+            <input type="file" id="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif" required>
+
+            <label for="widths">Ширины для ресайза (через запятую):</label>
+            <input type="text" id="widths" name="widths" placeholder="800,400,200">
+
+            <div style="margin: 10px 0;">
+                <input type="checkbox" id="watermark" name="watermark">
+                <label for="watermark" style="display: inline;">Добавить водяной знак</label>
+            </div>
+
+            <button type="submit">Загрузить</button>
+        </form>
+    </div>
+
+    <div class="form-group">
+        <h2>Управление задачами</h2>
+        <div style="margin-bottom: 15px;">
+            <label for="taskId">ID задачи:</label>
+            <input type="text" id="taskId" class="task-id-input" placeholder="Введите ID задачи">
+                <div class="button-group">
+                    <!-- Кнопка получения информации -->
+                    <button class="get-btn" onclick="getStatusInfo()">Получить информацию</button>
+                    <!-- Кнопка удаления -->
+                    <button class="delete-btn" onclick="deleteTask()">Удалить изображение</button>
+                </div>
+
+
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div style="margin-bottom: 15px;">
+            <h2>Получить изображение:</h2>
+            <form id="getImageForm" enctype="multipart/form-data">
+                <label for="imageId">ID задачи:</label>
+                <input type="text" id="imageId" class="task-id-input" placeholder="Введите ID задачи">
+                <label for="widths_get">Ширины для ресайза (через запятую):</label>
+                <input type="text" id="widths_get" name="widths" placeholder="800,400,200">
+
+                <div style="margin: 10px 0;">
+                    <input type="checkbox" id="watermark_get" name="watermark">
+                    <label for="watermark_get" style="display: inline;">С водяным знаком</label>
+                </div>
+                <div style="margin: 10px 0;">
+                    <input type="checkbox" id="original_get" name="original">
+                    <label for="original_get" style="display: inline;">Оригинал</label>
+                </div>
+                <div style="margin: 10px 0;">
+                    <input type="checkbox" id="thumbnail_get" name="thumbnail">
+                    <label for="thumbnail_get" style="display: inline;">Миниатюра</label>
+                </div>
+                <button type="submit">Получить</button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Результат -->
+    <div id="result" class="result">
+        <h3>Результат:</h3>
+        <pre id="resultContent"></pre>
+        <div id="imagePreviewContainer"></div>
+    </div>
+</div>
+
+<script>
+    // Обработка загрузки формы
+    document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const widths = document.getElementById('widths').value
+        const watermark = document.getElementById('watermark').checked
+
+        let request = `/upload?`
+        if (widths !== '') request += `widths=${widths}`
+        if (watermark) request += `&watermark=${watermark}`
+
+        try {
+            const response = await fetch(request, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            showResult(data);
+
+            if (data.task_id) {
+                document.getElementById('taskId').value = data.task_id;
+                document.getElementById('variantButtons').style.display = 'block';
+            }
+        } catch (error) {
+            showError('Ошибка загрузки: ' + error.message);
+        }
+    });
+
+    // Обработка формы получения изображения
+    document.getElementById('getImageForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const id = document.getElementById('imageId').value
+        const widths = document.getElementById('widths_get').value
+        const watermark = document.getElementById('watermark_get').checked
+        const original = document.getElementById('original_get').checked
+        const thumbnail = document.getElementById('thumbnail_get').checked
+
+        let request = `/image?id=${id}`
+        if (widths !== '') request += `&widths=${widths}`
+        if (watermark) request += `&watermark=${watermark}`
+        if (original) request += `&original=${original}`
+        if (thumbnail) request += `&thumbnail=${thumbnail}`
+
+        try {
+            const response = await fetch(request, {
+                method: 'GET',
+            });
+
+            const data = await response.json();
+
+            // Показываем результат
+            showResult(data);
+
+            // Отображаем изображения, если они есть в ответе
+            displayImages(data);
+        } catch (error) {
+            showError('Ошибка загрузки: ' + error.message);
+        }
+    });
+
+    // Получение информации о статусе
+    async function getStatusInfo() {
+        const taskId = document.getElementById('taskId').value;
+        if (!taskId) {
+            showError('Введите ID задачи');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/status?id=${taskId}`);
+            const data = await response.json();
+            showResult(data);
+
+            // Показываем заглушку в зависимости от статуса
+            showStatusPlaceholder(data.status);
+
+        } catch (error) {
+            showError('Ошибка получения информации: ' + error.message);
+        }
+    }
+
+
+    // Удаление задачи
+    async function deleteTask() {
+        const taskId = document.getElementById('taskId').value;
+        if (!taskId) {
+            showError('Введите ID задачи');
+            return;
+        }
+
+        if (!confirm('Вы уверены, что хотите удалить это изображение?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/image?id=${taskId}`, {
+                method: 'DELETE'
+            });
+
+            const data = await response.json();
+            showResult(data);
+        } catch (error) {
+            showError('Ошибка удаления: ' + error.message);
+        }
+    }
+
+
+    // Функция для отображения изображений
+    function displayImages(data) {
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        previewContainer.innerHTML = '<h4>Полученные изображения:</h4>';
+
+        // Создаем сетку для изображений
+        const gridDiv = document.createElement('div');
+        gridDiv.className = 'image-grid';
+
+        let hasImages = false;
+
+        // Отображаем ошибки, если есть
+        if (data.errors && data.errors.length > 0) {
+            const errorsDiv = document.createElement('div');
+            errorsDiv.className = 'errors-container';
+            errorsDiv.innerHTML = '<h5>Ошибки:</h5>';
+            data.errors.forEach(error => {
+                const errorItem = document.createElement('p');
+                errorItem.className = 'error';
+                errorItem.textContent = error;
+                errorsDiv.appendChild(errorItem);
+            });
+            previewContainer.appendChild(errorsDiv);
+        }
+
+        // Отображаем изображения, если есть
+        if (data.images && Array.isArray(data.images) && data.images.length > 0) {
+            data.images.forEach((item) => {
+                if (item.URL) {
+                    hasImages = true;
+                    const card = createImageCard(item.URL, item.variant);
+                    gridDiv.appendChild(card);
+                }
+            });
+        }
+
+        if (hasImages) {
+            previewContainer.appendChild(gridDiv);
+        } else {
+            previewContainer.innerHTML += '<p class="no-images">Нет доступных изображений</p>';
+        }
+    }
+
+    // Создание карточки изображения
+    function createImageCard(url, variant) {
+        const card = document.createElement('div');
+        card.className = 'image-card';
+
+        // Добавляем стили для карточки, чтобы изображение не выходило за рамки
+        card.style.border = '1px solid #ddd';
+        card.style.borderRadius = '8px';
+        card.style.padding = '15px';
+        card.style.backgroundColor = 'white';
+        card.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
+        card.style.display = 'flex';
+        card.style.flexDirection = 'column';
+        card.style.height = '100%';
+        card.style.boxSizing = 'border-box';
+
+        // Создаем контейнер для изображения с фиксированной высотой
+        const imgContainer = document.createElement('div');
+        imgContainer.style.width = '100%';
+        imgContainer.style.height = '200px'; // Фиксированная высота
+        imgContainer.style.display = 'flex';
+        imgContainer.style.justifyContent = 'center';
+        imgContainer.style.alignItems = 'center';
+        imgContainer.style.overflow = 'hidden'; // Обрезаем выходящее за пределы
+        imgContainer.style.backgroundColor = '#f8f9fa';
+        imgContainer.style.borderRadius = '4px';
+
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = variant;
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '100%';
+        img.style.width = 'auto';
+        img.style.height = 'auto';
+        img.style.objectFit = 'contain'; // Сохраняем пропорции
+        img.style.display = 'block';
+
+        img.onerror = () => {
+            imgContainer.innerHTML = '<span class="error" style="color: #f44336; padding: 10px;">❌ Ошибка загрузки</span>';
+        };
+
+        const title = document.createElement('div');
+        title.className = 'image-title';
+        title.textContent = variant;
+        title.style.fontWeight = 'bold';
+        title.style.margin = '10px 0';
+        title.style.color = '#333';
+        title.style.textAlign = 'center';
+        title.style.wordBreak = 'break-word'; // Перенос длинных слов
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.className = 'open-link';
+        link.textContent = 'Открыть в новой вкладке';
+        link.style.display = 'block';
+        link.style.textAlign = 'center';
+        link.style.color = '#2196F3';
+        link.style.textDecoration = 'none';
+        link.style.padding = '8px';
+        link.style.borderTop = '1px solid #eee';
+        link.style.marginTop = '10px';
+        link.style.transition = 'background-color 0.3s';
+
+        // Добавляем hover эффект
+        link.onmouseover = () => {
+            link.style.backgroundColor = '#f5f5f5';
+        };
+        link.onmouseout = () => {
+            link.style.backgroundColor = 'transparent';
+        };
+
+        imgContainer.appendChild(img);
+        card.appendChild(imgContainer);
+        card.appendChild(title);
+        card.appendChild(link);
+
+        return card;
+    }
+
+    // Функция для отображения заглушки по статусу
+    function showStatusPlaceholder(status) {
+        const previewContainer = document.getElementById('imagePreviewContainer');
+
+        // Удаляем предыдущую заглушку, если есть
+        const oldPlaceholder = document.getElementById('statusPlaceholder');
+        if (oldPlaceholder) {
+            oldPlaceholder.remove();
+        }
+
+        // Создаем новую заглушку
+        const placeholder = document.createElement('div');
+        placeholder.id = 'statusPlaceholder';
+        placeholder.style.marginTop = '20px';
+        placeholder.style.padding = '20px';
+        placeholder.style.borderRadius = '8px';
+        placeholder.style.textAlign = 'center';
+        placeholder.style.fontSize = '16px';
+
+        let icon = '';
+        let message = '';
+        let backgroundColor = '';
+
+        switch(status) {
+            case 'pending':
+                icon = '⏳';
+                message = 'Задача ожидает обработки';
+                backgroundColor = '#fff3cd';
+                placeholder.style.color = '#856404';
+                break;
+
+            case 'processing':
+                icon = '⚙️';
+                message = 'Изображение обрабатывается';
+                backgroundColor = '#cce5ff';
+                placeholder.style.color = '#004085';
+
+                // Добавляем анимацию для processing
+                placeholder.style.animation = 'pulse 1.5s infinite';
+                break;
+
+            case 'completed':
+                icon = '✅';
+                message = 'Обработка успешно завершена';
+                backgroundColor = '#d4edda';
+                placeholder.style.color = '#155724';
+                break;
+
+            case 'failed':
+                icon = '❌';
+                message = 'Ошибка при обработке изображения';
+                backgroundColor = '#f8d7da';
+                placeholder.style.color = '#721c24';
+                break;
+
+            default:
+                icon = 'ℹ️';
+                message = 'Неизвестный статус';
+                backgroundColor = '#e2e3e5';
+                placeholder.style.color = '#383d41';
+        }
+
+        placeholder.style.backgroundColor = backgroundColor;
+        placeholder.innerHTML = `
+        <div style="font-size: 48px; margin-bottom: 10px;">${icon}</div>
+        <div style="font-weight: bold; margin-bottom: 5px;">Статус: ${status}</div>
+        <div>${message}</div>
+    `;
+
+        previewContainer.appendChild(placeholder);
+    }
+
+    // Вспомогательные функции
+    function showResult(data) {
+        const resultDiv = document.getElementById('result');
+        const contentDiv = document.getElementById('resultContent');
+
+        resultDiv.style.display = 'block';
+        contentDiv.textContent = JSON.stringify(data, null, 2);
+
+        // Прокрутка к результату
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function showError(message) {
+        const resultDiv = document.getElementById('result');
+        const contentDiv = document.getElementById('resultContent');
+
+        resultDiv.style.display = 'block';
+        contentDiv.innerHTML = '<span class="error"> ' + message + '</span>';
+    }
+
+
+    // Обработка Enter в поле ID
+    document.getElementById('taskId').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            getTaskInfo();
+        }
+    });
+</script>
+</body>
+</html>

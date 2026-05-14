@@ -1,0 +1,68 @@
+services:
+  kafka:
+    image: bitnami/kafka:latest
+    container_name: kafka_l34
+    ports:
+      - "9092:9092"
+    volumes:
+      - "kafka_data:/bitnami/kafka"
+    environment:
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
+      # Optional: For configuring Kafka UI
+      # - KAFKA_UI_ENABLED=true
+      # - KAFKA_UI_BROKER_URL=http://kafka:9092
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres_db_l34
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1337!
+      POSTGRES_DB: image_processor
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio_server_l34
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_CONSOLE_ADDRESS: ":9001"
+    command: server /data --address ":9000" --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - app-network
+
+
+volumes:
+  kafka_data:
+  postgres_data:
+  minio_data:
+
+networks:
+  app-network:
+    driver: bridge
