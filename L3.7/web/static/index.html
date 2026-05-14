@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warehouse Control System</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<!-- Страница входа -->
+<div id="loginPage" class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <i class="fas fa-warehouse"></i>
+            <h1>Warehouse Control</h1>
+            <p>Войдите в систему управления складом</p>
+        </div>
+        <div class="login-form">
+            <label for="usernameLogin">Введите имя пользователя:</label>
+            <input id="usernameLogin" type="text" placeholder="Введите имя">
+            <button onclick="login()" class="login-btn">
+                <i class="fas fa-sign-in-alt"></i> Войти
+            </button>
+        </div>
+        <div>
+            <div>
+                <label for="usernameCreate">Создать пользователя:</label>
+                <input id="usernameCreate" type="text" placeholder="Введите имя">
+            </div>
+            <div>
+                <label for="roleSelectCreate">Выберите роль:</label>
+                <select id="roleSelectCreate" class="role-select">
+                    <option value="admin">Admin (полный доступ)</option>
+                    <option value="manager">Manager (просмотр и редактирование)</option>
+                    <option value="viewer">Viewer (только просмотр)</option>
+                </select>
+                <button onclick="createUser()" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i> Создать
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Основное приложение -->
+<div id="app" style="display: none;">
+    <!-- Шапка -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-warehouse"></i>
+                <h2>Warehouse Control</h2>
+            </div>
+            <div class="user-info">
+                <div class="user-details">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="username"></span>
+                    <span id="userRole" class="role-badge"></span>
+                </div>
+                <button onclick="logout()" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Выйти
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <div class="main-container">
+        <!-- Боковое меню -->
+        <aside class="sidebar">
+            <nav class="nav-menu">
+                <button onclick="showTab('items')" id="itemsTabBtn" class="nav-btn active">
+                    <i class="fas fa-boxes"></i>
+                    <span>Товары</span>
+                </button>
+                <button onclick="showTab('history')" id="historyTabBtn" class="nav-btn">
+                    <i class="fas fa-history"></i>
+                    <span>История</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Контент -->
+        <main class="content">
+            <!-- Вкладка товаров -->
+            <div id="itemsTab" class="tab-content active">
+                <div class="tab-header">
+                    <h2><i class="fas fa-boxes"></i> Управление товарами</h2>
+                    <button onclick="showAddItemModal()" id="addItemBtn" class="btn-primary">
+                        <i class="fas fa-plus"></i> Добавить товар
+                    </button>
+                </div>
+
+                <!-- Таблица товаров -->
+                <div class="table-container">
+                    <table class="items-table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Название</th>
+                            <th>Количество</th>
+                            <th>Цена</th>
+                            <th>Дата создания</th>
+                            <th>Действия</th>
+                        </tr>
+                        </thead>
+                        <tbody id="itemsTableBody">
+                        <tr>
+                            <td colspan="6" class="loading-cell">
+                                <i class="fas fa-spinner fa-spin"></i> Загрузка...
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Вкладка истории -->
+            <div id="historyTab" class="tab-content">
+                <div class="tab-header">
+                    <h2><i class="fas fa-history"></i> История изменений</h2>
+                    <button onclick="loadHistory()" class="btn-secondary">
+                        <i class="fas fa-sync-alt"></i> Обновить
+                    </button>
+                </div>
+
+                <!-- Фильтры для истории -->
+                <div class="filters-container">
+                    <div class="filters-header">
+                        <i class="fas fa-filter"></i>
+                        <h3>Фильтры</h3>
+                        <button onclick="clearFilters()" class="clear-filters-btn">
+                            <i class="fas fa-times"></i> Очистить
+                        </button>
+                    </div>
+                    <div class="filters-grid">
+                        <div class="filter-group">
+                            <label for="filterAction">Тип действия:</label>
+                            <select id="filterAction">
+                                <option value="">Все действия</option>
+                                <option value="INSERT">Создание</option>
+                                <option value="UPDATE">Обновление</option>
+                                <option value="DELETE">Удаление</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filterUser">Пользователь:</label>
+                            <input type="text" id="filterUser" placeholder="Введите имя пользователя">
+                        </div>
+                        <div class="filter-group">
+                            <label for="filterItemId">ID товара:</label>
+                            <input type="number" id="filterItemId" placeholder="ID товара">
+                        </div>
+                        <div class="filter-group">
+                            <label for="filterDateFrom">Дата с:</label>
+                            <input type="datetime-local" id="filterDateFrom">
+                        </div>
+                        <div class="filter-group">
+                            <label for="filterDateTo">Дата по:</label>
+                            <input type="datetime-local" id="filterDateTo">
+                        </div>
+                        <button id="loadHistoryBtn" onclick="loadHistory()" class="btn-primary">
+                            Применить
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Таблица истории -->
+                <div class="table-container">
+                    <table class="history-table">
+                        <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Товар ID</th>
+                            <th>Действие</th>
+                            <th>Пользователь</th>
+                            <th>Изменения</th>
+                        </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                        <tr>
+                            <td colspan="5" class="loading-cell">
+                                <i class="fas fa-spinner fa-spin"></i> Загрузка...
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Модальное окно для добавления/редактирования товара -->
+    <div id="itemModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Добавить товар</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="itemForm" onsubmit="saveItem(event)">
+                <input type="hidden" id="itemId">
+                <div class="form-group">
+                    <label for="itemName">Название товара *</label>
+                    <input type="text" id="itemName" required placeholder="Введите название товара">
+                </div>
+                <div class="form-group">
+                    <label for="itemQuantity">Количество</label>
+                    <input type="number" id="itemQuantity" min="0" value="0" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label for="itemPrice">Цена (₽)</label>
+                    <input type="number" id="itemPrice" min="0" step="0.01" value="0" placeholder="0.00">
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" onclick="closeModal()" class="btn-cancel">Отмена</button>
+                    <button type="submit" class="btn-save">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно для просмотра истории товара -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>История изменений товара #<span id="historyItemId"></span></h3>
+                <span class="close" onclick="closeHistoryModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="table-container">
+                    <table class="history-table">
+                        <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Действие</th>
+                            <th>Пользователь</th>
+                            <th>Изменения</th>
+                        </tr>
+                        </thead>
+                        <tbody id="historyModalBody">
+                        <tr>
+                            <td colspan="4" class="loading-cell">Загрузка...</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/script.js"></script>
+</body>
+</html>
